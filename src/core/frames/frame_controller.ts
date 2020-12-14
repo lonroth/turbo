@@ -96,8 +96,8 @@ export class FrameController implements AppearanceObserverDelegate, FetchRequest
 
   // Form interceptor delegate
 
-  shouldInterceptFormSubmission(element: HTMLFormElement) {
-    return this.shouldInterceptNavigation(element)
+  shouldInterceptFormSubmission(element: HTMLFormElement, submitter?: HTMLElement) {
+    return this.shouldInterceptNavigation(element, submitter)
   }
 
   formSubmissionIntercepted(element: HTMLFormElement, submitter?: HTMLElement) {
@@ -153,7 +153,7 @@ export class FrameController implements AppearanceObserverDelegate, FetchRequest
   }
 
   formSubmissionSucceededWithResponse(formSubmission: FormSubmission, response: FetchResponse) {
-    const frame = this.findFrameElement(formSubmission.formElement)
+    const frame = this.findFrameElement(formSubmission.formElement, formSubmission.submitter)
     frame.delegate.loadResponse(response)
   }
 
@@ -188,8 +188,8 @@ export class FrameController implements AppearanceObserverDelegate, FetchRequest
     frame.src = url
   }
 
-  private findFrameElement(element: Element) {
-    const id = element.getAttribute("data-turbo-frame")
+  private findFrameElement(element: Element, submitter?: HTMLElement) {
+    const id = submitter?.getAttribute("data-turbo-frame") || element.getAttribute("data-turbo-frame")
     return getFrameElementById(id) ?? this.element
   }
 
@@ -244,8 +244,8 @@ export class FrameController implements AppearanceObserverDelegate, FetchRequest
     return false
   }
 
-  private shouldInterceptNavigation(element: Element) {
-    const id = element.getAttribute("data-turbo-frame") || this.element.getAttribute("target")
+  private shouldInterceptNavigation(element: Element, submitter?: HTMLElement) {
+    const id = submitter?.getAttribute("data-turbo-frame") || element.getAttribute("data-turbo-frame") || this.element.getAttribute("target")
 
     if (!this.enabled || id == "_top") {
       return false
